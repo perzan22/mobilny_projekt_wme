@@ -39,7 +39,7 @@ import com.example.projekt_amw.ui.theme.Projekt_amwTheme
 
 class MainActivity : ComponentActivity() {
 
-    // zmienna przechowująca instancję klasy DataBaseHelper z funkcjami bazy danych
+    // zmienna przechowująca instancję klasy DatabaseHelper z funkcjami bazy danych
     private lateinit var databseHelper: DatabaseHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,7 +84,7 @@ fun MainScreen(navController: NavHostController, databaseHelper: DatabaseHelper)
     }
 }
 
-// Kokmponent ze stroną główną aplikacji
+// Komponent ze stroną główną aplikacji
 @Composable
 fun MainPage(navController: NavHostController) {
     Column(
