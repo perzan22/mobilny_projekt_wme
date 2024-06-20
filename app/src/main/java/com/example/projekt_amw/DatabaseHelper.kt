@@ -120,7 +120,7 @@ class DatabaseHelper(context: Context):  SQLiteOpenHelper(context, DATABASE_NAME
         values.put(STUDENT_KIERUNEK, student.kierunek)
         db.insert(TABELA_STUDENT, null, values)
 
-        val updateQuery = "UPDATE $TABELA_KIERUNKI SET $KIERUNKI_ILOSC_ZAPISANYCH = $KIERUNKI_ILOSC_ZAPISANYCH + 1 WHERE ID = ?"
+        val updateQuery = "UPDATE $TABELA_KIERUNKI SET $KIERUNKI_ILOSC_ZAPISANYCH = $KIERUNKI_ILOSC_ZAPISANYCH + 1 WHERE $KIERUNKI_ID = ?"
         val statement = db.compileStatement(updateQuery)
         statement.bindLong(1, student.kierunek.toLong())
         statement.executeUpdateDelete()
@@ -134,7 +134,7 @@ class DatabaseHelper(context: Context):  SQLiteOpenHelper(context, DATABASE_NAME
         val selectQuery = "SELECT * FROM $TABLE_NEWS"
 
         val db = this.readableDatabase
-        var cursor: Cursor? = null
+        val cursor: Cursor?
 
         try {
             cursor = db.rawQuery(selectQuery, null)
@@ -169,7 +169,7 @@ class DatabaseHelper(context: Context):  SQLiteOpenHelper(context, DATABASE_NAME
         val selectQuery = "SELECT * FROM $TABELA_KIERUNKI"
 
         val db = this.readableDatabase
-        var cursor: Cursor? = null
+        val cursor: Cursor?
 
         try {
             cursor = db.rawQuery(selectQuery, null)
@@ -202,12 +202,12 @@ class DatabaseHelper(context: Context):  SQLiteOpenHelper(context, DATABASE_NAME
 
     @SuppressLint("Recycle", "Range")
     fun getKierunek(kierunekID: String): KierunekModel? {
-        var kierunek: KierunekModel
+        val kierunek: KierunekModel
 
         val db = readableDatabase
         val selectQuery = "SELECT * FROM $TABELA_KIERUNKI WHERE $KIERUNKI_ID = ?"
 
-        var cursor: Cursor? = null
+        val cursor: Cursor?
 
         try {
             cursor = db.rawQuery(selectQuery, arrayOf(kierunekID))
@@ -216,17 +216,15 @@ class DatabaseHelper(context: Context):  SQLiteOpenHelper(context, DATABASE_NAME
             return null
         }
 
-        var kierunekID: Int
-        var nazwa: String
-        var opis: String
-        var iloscZapisanych: Int
+        val nazwa: String
+        val opis: String
+        val iloscZapisanych: Int
 
         if (cursor.moveToFirst()) {
-            kierunekID = cursor.getInt(cursor.getColumnIndex(KIERUNKI_ID))
             nazwa = cursor.getString(cursor.getColumnIndex(KIERUNKI_NAZWA))
             opis = cursor.getString(cursor.getColumnIndex(KIERUNKI_OPIS))
             iloscZapisanych = cursor.getInt(cursor.getColumnIndex(KIERUNKI_ILOSC_ZAPISANYCH))
-            kierunek = KierunekModel(kierunekID = kierunekID, nazwa = nazwa, opis = opis, iloscZapisanych = iloscZapisanych)
+            kierunek = KierunekModel(kierunekID = kierunekID.toInt(), nazwa = nazwa, opis = opis, iloscZapisanych = iloscZapisanych)
             return kierunek
         }
 
