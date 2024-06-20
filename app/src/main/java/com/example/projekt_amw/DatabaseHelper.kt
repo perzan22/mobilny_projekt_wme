@@ -37,10 +37,12 @@ class DatabaseHelper(context: Context):  SQLiteOpenHelper(context, DATABASE_NAME
     }
 
     override fun onCreate(db: SQLiteDatabase?) {
+        // Tworzenie tabeli aktualnosci
         val createNewsTableQuery = ("CREATE TABLE $TABLE_NEWS ($NEWS_ID INTEGER PRIMARY KEY, "
                 + "$NEWS_TITLE TEXT, $NEWS_CONTENT TEXT)")
         db!!.execSQL(createNewsTableQuery)
 
+        // dodanie dwóch początkowych rekordów
         val aktualnosc1 = ContentValues()
         aktualnosc1.put(NEWS_TITLE, "Dni otwarte Akademii Marynarki Wojennej w Gdyni")
         aktualnosc1.put(NEWS_CONTENT, "Zapraszamy na Dzień Otwarty Akademii Marynarki Wojennej w Gdyni! " +
@@ -57,10 +59,12 @@ class DatabaseHelper(context: Context):  SQLiteOpenHelper(context, DATABASE_NAME
                 "Gratulujemy naszym studentom za ich wybitne osiągnięcia i innowacyjne podejście!")
         db.insert(TABLE_NEWS, null, aktualnosc2)
 
+        // Tworzenie tabeli kierunki
         val createKierunkiTableQuery = ("CREATE TABLE $TABELA_KIERUNKI ($KIERUNKI_ID INTEGER PRIMARY KEY, "
                 + "$KIERUNKI_NAZWA TEXT, $KIERUNKI_OPIS TEXT, $KIERUNKI_ILOSC_ZAPISANYCH INTEGER)")
         db.execSQL(createKierunkiTableQuery)
 
+        // dodanie 4 kierunków do bazy
         val informatyka = ContentValues()
         informatyka.put(KIERUNKI_NAZWA, "Informatyka")
         informatyka.put(KIERUNKI_OPIS, "Informatyka na Akademii Marynarki Wojennej w Gdyni to nowoczesny kierunek " +
@@ -100,6 +104,7 @@ class DatabaseHelper(context: Context):  SQLiteOpenHelper(context, DATABASE_NAME
         mechanika.put(KIERUNKI_ILOSC_ZAPISANYCH, 0)
         db.insert(TABELA_KIERUNKI, null, mechanika)
 
+        // Tworzenie tabeli studentów
         val createStudentTableQuery = ("CREATE TABLE $TABELA_STUDENT ($STUDENT_ID INTEGER PRIMARY KEY, "
                 + "$STUDENT_IMIE TEXT, $STUDENT_NAZWISKO TEXT, $STUDENT_KIERUNEK INTEGER)")
         db.execSQL(createStudentTableQuery)
@@ -112,14 +117,18 @@ class DatabaseHelper(context: Context):  SQLiteOpenHelper(context, DATABASE_NAME
         onCreate(db)
     }
 
+    // Funkcja wstawiająca studenta do bazy danych
     fun insertStudent(student: StudentModel) {
         val db = this.writableDatabase
+
+        // Wstawienie studenta do tabeli student
         val values = ContentValues()
         values.put(STUDENT_IMIE, student.imie)
         values.put(STUDENT_NAZWISKO, student.nazwisko)
         values.put(STUDENT_KIERUNEK, student.kierunek)
         db.insert(TABELA_STUDENT, null, values)
 
+        // Aktualizacja wartości ilości osób zapisanych na dany kierunek (zwiększenie o 1)
         val updateQuery = "UPDATE $TABELA_KIERUNKI SET $KIERUNKI_ILOSC_ZAPISANYCH = $KIERUNKI_ILOSC_ZAPISANYCH + 1 WHERE $KIERUNKI_ID = ?"
         val statement = db.compileStatement(updateQuery)
         statement.bindLong(1, student.kierunek.toLong())
@@ -128,6 +137,7 @@ class DatabaseHelper(context: Context):  SQLiteOpenHelper(context, DATABASE_NAME
         db.close()
     }
 
+    // Funkcja zwrtacająca wszystkie aktualnosci z bazy danych
     @SuppressLint("Range", "Recycle")
     fun getAllNews(): List<AktualnoscModel> {
         val newsList: ArrayList<AktualnoscModel> = ArrayList<AktualnoscModel>()
@@ -163,6 +173,7 @@ class DatabaseHelper(context: Context):  SQLiteOpenHelper(context, DATABASE_NAME
         return newsList
     }
 
+    // Funkcja zwracająca wszystkie kierunki z bazy danych
     @SuppressLint("Range", "Recycle")
     fun getAllKierunki(): List<KierunekModel> {
         val kierunkiList: ArrayList<KierunekModel> = ArrayList<KierunekModel>()
@@ -200,6 +211,7 @@ class DatabaseHelper(context: Context):  SQLiteOpenHelper(context, DATABASE_NAME
         return kierunkiList
     }
 
+    // Funkcja zwracająca wybrany kierunek poprzez kierunekID
     @SuppressLint("Recycle", "Range")
     fun getKierunek(kierunekID: String): KierunekModel? {
         val kierunek: KierunekModel

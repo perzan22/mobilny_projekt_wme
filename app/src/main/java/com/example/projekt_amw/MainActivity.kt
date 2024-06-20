@@ -39,6 +39,7 @@ import com.example.projekt_amw.ui.theme.Projekt_amwTheme
 
 class MainActivity : ComponentActivity() {
 
+    // zmienna przechowująca instancję klasy DataBaseHelper z funkcjami bazy danych
     private lateinit var databseHelper: DatabaseHelper
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -46,12 +47,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         databseHelper = DatabaseHelper(this)
         setContent {
+            // Głównym komponentem jest motyw z Material3
             Projekt_amwTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
+                    // Obsługę nawigacji po aplikacji umożliwia navController
                     val navController = rememberNavController()
                     MainScreen(navController, databseHelper)
                 }
@@ -60,12 +63,16 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+// Komponent MainScreen do nawigacji po widokach
 @Composable
 fun MainScreen(navController: NavHostController, databaseHelper: DatabaseHelper) {
     NavHost(navController, startDestination = "home") {
+
+        // Każdy widok otwiera się po przekazaniu odpowiedniej ścieżki do navHost
         composable("home") { MainPage(navController) }
         composable("aktualnosci") { Aktualnosci(navController, databaseHelper) }
         composable("kierunki") { Kierunki(navController, databaseHelper) }
+        // Pobranie ID kierunku ze ścieżki z NavHost
         composable("kierunek_details/{kierunekID}") { backStackEntry ->
             val kierunekID = backStackEntry.arguments?.getString("kierunekID") ?: return@composable
             Kierunek_Details(navController = navController, databaseHelper = databaseHelper, kierunekID = kierunekID)
@@ -77,6 +84,7 @@ fun MainScreen(navController: NavHostController, databaseHelper: DatabaseHelper)
     }
 }
 
+// Kokmponent ze stroną główną aplikacji
 @Composable
 fun MainPage(navController: NavHostController) {
     Column(
@@ -113,6 +121,7 @@ fun MainPage(navController: NavHostController) {
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.primary
             )
+        // Przycisk przenosi do widoku aktualnosci za pomocą navController
         Spacer(modifier = Modifier.height(12.dp))
         Button(onClick = { navController.navigate("aktualnosci") }) {
             Text(text = "Zobacz aktualności")
@@ -122,6 +131,7 @@ fun MainPage(navController: NavHostController) {
             style = MaterialTheme.typography.headlineMedium,
             color = MaterialTheme.colorScheme.primary
         )
+        // Przycisk przenosi do widoku kierunki za pomocą navController
         Spacer(modifier = Modifier.height(12.dp))
         Button(onClick = { navController.navigate("kierunki") }) {
             Text(text = "Zobacz kierunki")
@@ -131,8 +141,11 @@ fun MainPage(navController: NavHostController) {
 
 }
 
+// Komponent pokazujący wszystkie aktualności
 @Composable
 fun Aktualnosci(navController: NavHostController, databaseHelper: DatabaseHelper) {
+
+    // Pobranie listy aktualności z bazy danych
     val newsList = remember {
         databaseHelper.getAllNews()
     }
@@ -147,6 +160,7 @@ fun Aktualnosci(navController: NavHostController, databaseHelper: DatabaseHelper
             style = MaterialTheme.typography.headlineLarge)
         Spacer(modifier = Modifier.height(30.dp))
 
+        // Lista aktualności wyświetlana jest za pomocą pętli forEach
         newsList.forEach { newsItem ->
             Surface(modifier = Modifier
                 .border(
@@ -166,6 +180,7 @@ fun Aktualnosci(navController: NavHostController, databaseHelper: DatabaseHelper
             Spacer(modifier = Modifier.height(20.dp))
         }
 
+        // Przycisk do powrotu do strony głównej za pomocą navController
         Button(onClick = { navController.navigate("home") }) {
             Text(text = "STRONA GŁÓWNA")
         }
@@ -173,8 +188,11 @@ fun Aktualnosci(navController: NavHostController, databaseHelper: DatabaseHelper
     }
 }
 
+// Komponent wyświetlający kierunki na wydziale WME
 @Composable
 fun Kierunki(navController: NavHostController, databaseHelper: DatabaseHelper) {
+
+    // Pobranie listy kierunków z bazy danych
     val kierunkiList = remember {
         databaseHelper.getAllKierunki()
     }
@@ -191,10 +209,13 @@ fun Kierunki(navController: NavHostController, databaseHelper: DatabaseHelper) {
         Text(text = "Zapraszamy do wstępnych zapisów!", color = MaterialTheme.colorScheme.onBackground)
         Spacer(modifier = Modifier.height(24.dp))
 
+        // Kierunki są wyświetlane po kolei za pomocą pętli forEach
         kierunkiList.forEach { kierunek ->
             Surface(modifier = Modifier
                 .height(100.dp)
                 .width(300.dp)
+                // Każdy Surface jest klikalny po naciśnięciu przenosi do widoku poszczególnego
+                // kierunku za pomocą navController
                 .clickable { navController.navigate("kierunek_details/${kierunek.kierunekID}") },
                 shape = MaterialTheme.shapes.medium,
                 color = MaterialTheme.colorScheme.primary,
@@ -211,15 +232,18 @@ fun Kierunki(navController: NavHostController, databaseHelper: DatabaseHelper) {
             Spacer(modifier = Modifier.height(24.dp))
         }
         Spacer(modifier = Modifier.height(24.dp))
+        // Przycisk do powrotu do strony głównej za pomocą navController
         Button(onClick = { navController.navigate("home") }) {
             Text(text = "STRONA GŁÓWNA")
         }
     }
 }
 
+// Komponent wyświetlający informacje o wybranym kierunku
 @Composable
 fun Kierunek_Details(navController: NavHostController, databaseHelper: DatabaseHelper, kierunekID: String) {
 
+    // Pobranie wybranego kierunku za pomocą kierunekID z bazy danych
     val kierunek = remember {
         databaseHelper.getKierunek(kierunekID = kierunekID)
     }
@@ -238,10 +262,12 @@ fun Kierunek_Details(navController: NavHostController, databaseHelper: DatabaseH
             }
         }
         Spacer(modifier = Modifier.height(40.dp))
+        // Przycisk nawigujący do strony z zapisem na kierunek za pomocą navController
         Button(onClick = { navController.navigate("kierunek_register/$kierunekID") }) {
             Text(text = "ZAPISZ SIĘ")
         }
         Spacer(modifier = Modifier.height(16.dp))
+        // Przycisk powracający do strony ze wszystkimi kierunkami za pomocą navController
         Button(onClick = { navController.navigate("kierunki") }) {
             Text(text = "WSZYSTKIE KIERUNKI")
         }
@@ -250,9 +276,11 @@ fun Kierunek_Details(navController: NavHostController, databaseHelper: DatabaseH
 
 }
 
+// Komponent służący do zapisania się na wybrany kierunek
 @Composable
 fun Kierunek_Register(navController: NavHostController, databaseHelper: DatabaseHelper, kierunekID: String) {
 
+    // Pobranie kierunku z bazy danych
     val kierunek = remember {
         databaseHelper.getKierunek(kierunekID = kierunekID)
     }
@@ -262,6 +290,7 @@ fun Kierunek_Register(navController: NavHostController, databaseHelper: Database
     val errorDialog = remember { mutableStateOf(false) }
     val successDialog = remember { mutableStateOf(false) }
 
+    // Alert dialog wyświetla się po niepoprawnym wypełnieniu formularza
     if (errorDialog.value) {
         AlertDialog(
             onDismissRequest = {
@@ -275,6 +304,7 @@ fun Kierunek_Register(navController: NavHostController, databaseHelper: Database
         )
     }
 
+    // successDialog wyświetlax się po poprawnym wypełnieniu formularza
     if (successDialog.value) {
         AlertDialog(
             onDismissRequest = { successDialog.value = false
@@ -282,6 +312,7 @@ fun Kierunek_Register(navController: NavHostController, databaseHelper: Database
                                },
             confirmButton = {
                 Button(onClick = { successDialog.value = false
+                    // Funkcja popBackStack() nawiguje do poprzedniego komponentu
                     navController.popBackStack()
                 }) {
                     Text("OK")
@@ -305,6 +336,9 @@ fun Kierunek_Register(navController: NavHostController, databaseHelper: Database
             Column(modifier = Modifier.padding(16.dp),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally) {
+                // W JetPack Compose nie należy używać ViewBinding, zamiast tego wartości z
+                // formularza pobuiera się bezpośrednio z TextField i zapisuje do zmiennej
+                // w kompnencie
                 TextField(
                     value = firstName.value,
                     onValueChange = { firstName.value = it },
@@ -318,6 +352,7 @@ fun Kierunek_Register(navController: NavHostController, databaseHelper: Database
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 Button(onClick = {
+                    // Sprawdzenie czy poprawnie wypełniony formularz i wykonanie insertStudent
                     if (firstName.value.isNotEmpty() && lastName.value.isNotEmpty()) {
                         val student = StudentModel(0, firstName.value, lastName.value, kierunekID.toInt())
                         databaseHelper.insertStudent(student)
@@ -341,6 +376,7 @@ fun Kierunek_Register(navController: NavHostController, databaseHelper: Database
 
 }
 
+// Komponent do preview
 @Preview
 @Composable
 fun PreviewMainPage() {
