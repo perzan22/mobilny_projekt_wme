@@ -82,7 +82,7 @@ class DatabaseHelper(context: Context):  SQLiteOpenHelper(context, DATABASE_NAME
         db.insert(TABELA_KIERUNKI, null, automatyka)
 
         val mechatronika = ContentValues()
-        mechatronika.put(KIERUNKI_NAZWA, "Mexchatronika")
+        mechatronika.put(KIERUNKI_NAZWA, "Mechatronika")
         mechatronika.put(KIERUNKI_OPIS, "Mechatronika na Akademii Marynarki Wojennej to interdyscyplinarny " +
                 "kierunek, który łączy inżynierię mechaniczną, elektryczną i komputerową. " +
                 "Studenci zdobywają wiedzę na temat projektowania i obsługi nowoczesnych " +
@@ -158,7 +158,8 @@ class DatabaseHelper(context: Context):  SQLiteOpenHelper(context, DATABASE_NAME
 
             } while (cursor.moveToNext())
         }
-
+        cursor.close()
+        db.close()
         return newsList
     }
 
@@ -194,7 +195,43 @@ class DatabaseHelper(context: Context):  SQLiteOpenHelper(context, DATABASE_NAME
 
             } while (cursor.moveToNext())
         }
-
+        cursor.close()
+        db.close()
         return kierunkiList
+    }
+
+    @SuppressLint("Recycle", "Range")
+    fun getKierunek(kierunekID: String): KierunekModel? {
+        var kierunek: KierunekModel
+
+        val db = readableDatabase
+        val selectQuery = "SELECT * FROM $TABELA_KIERUNKI WHERE $KIERUNKI_ID = ?"
+
+        var cursor: Cursor? = null
+
+        try {
+            cursor = db.rawQuery(selectQuery, arrayOf(kierunekID))
+        } catch (e: SQLiteException) {
+            db.execSQL(selectQuery)
+            return null
+        }
+
+        var kierunekID: Int
+        var nazwa: String
+        var opis: String
+        var iloscZapisanych: Int
+
+        if (cursor.moveToFirst()) {
+            kierunekID = cursor.getInt(cursor.getColumnIndex(KIERUNKI_ID))
+            nazwa = cursor.getString(cursor.getColumnIndex(KIERUNKI_NAZWA))
+            opis = cursor.getString(cursor.getColumnIndex(KIERUNKI_OPIS))
+            iloscZapisanych = cursor.getInt(cursor.getColumnIndex(KIERUNKI_ILOSC_ZAPISANYCH))
+            kierunek = KierunekModel(kierunekID = kierunekID, nazwa = nazwa, opis = opis, iloscZapisanych = iloscZapisanych)
+            return kierunek
+        }
+
+        cursor.close()
+        db.close()
+        return null
     }
 }
